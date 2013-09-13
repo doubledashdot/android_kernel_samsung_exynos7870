@@ -1050,6 +1050,17 @@ static void cpufreq_init_policy(struct cpufreq_policy *policy)
 
 	new_policy.governor = gov;
 
+	if (per_cpu(cpufreq_policy_save, policy->cpu).min) {
+		policy->min = per_cpu(cpufreq_policy_save, policy->cpu).min;
+		policy->user_policy.min = policy->min;
+	}
+	if (per_cpu(cpufreq_policy_save, policy->cpu).max) {
+		policy->max = per_cpu(cpufreq_policy_save, policy->cpu).max;
+		policy->user_policy.max = policy->max;
+	}
+	pr_debug("Restoring CPU%d user policy min %d and max %d\n",
+		 policy->cpu, policy->min, policy->max);
+
 	/* Use the default policy if its valid. */
 	if (cpufreq_driver->setpolicy)
 		cpufreq_parse_governor(gov->name, &new_policy.policy, NULL);
@@ -1496,6 +1507,13 @@ static int __cpufreq_remove_dev_prepare(struct device *dev,
 		}
 	}
 
+	if (!cpufreq_driver->setpolicy)
+		strlcpy(per_cpu(cpufreq_policy_save, cpu).gov,
+			policy->governor->name, CPUFREQ_NAME_LEN);
+	per_cpu(cpufreq_policy_save, cpu).min = policy->user_policy.min;
+	per_cpu(cpufreq_policy_save, cpu).max = policy->user_policy.max;
+	pr_debug("Saving CPU%d user policy min %d and max %d\n",
+		 cpu, policy->user_policy.min, policy->user_policy.max);
 	down_read(&policy->rwsem);
 	cpus = cpumask_weight(policy->cpus);
 	up_read(&policy->rwsem);
