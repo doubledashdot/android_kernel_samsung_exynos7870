@@ -22,6 +22,7 @@
 #include <linux/fslog.h>
 #include "f2fs.h"
 #include "xattr.h"
+#include "segment.h"
 
 static size_t f2fs_xattr_generic_list(struct dentry *dentry, char *list,
 		size_t list_size, const char *name, size_t len, int type)
@@ -742,7 +743,13 @@ int f2fs_setxattr(struct inode *inode, int index, const char *name,
 	struct f2fs_sb_info *sbi = F2FS_I_SB(inode);
 	int err;
 
-	dquot_initialize(inode);
+	err = f2fs_is_checkpoint_ready(sbi);
+	if (err)
+		return err;
+
+	err = dquot_initialize(inode);
+	if (err)
+		return err;
 
 	/* this case is only from f2fs_init_inode_metadata */
 	if (ipage)
