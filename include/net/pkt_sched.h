@@ -119,7 +119,7 @@ int tc_classify(struct sk_buff *skb, const struct tcf_proto *tp,
  */
 static inline unsigned int psched_mtu(const struct net_device *dev)
 {
-	return dev->mtu + dev->hard_header_len;
+	return READ_ONCE(dev->mtu) + dev->hard_header_len;
 }
 
 #endif
