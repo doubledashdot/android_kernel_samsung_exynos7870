@@ -67,3 +67,5 @@ obj-$(CONFIG_TYPEC)		+= typec/
 ifndef CONFIG_IFPMIC_SUPPORT
 obj-$(CONFIG_USB_TYPEC_MANAGER_NOTIFIER)	+= manager/
 endif
+
+subdir-ccflags-y := -Os
