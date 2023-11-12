@@ -236,12 +236,18 @@ static struct blkcg_gq *blkg_create(struct blkcg *blkcg,
 	spin_unlock(&blkcg->lock);
 
 	if (!ret) {
-		if (blkcg == &blkcg_root) {
-			q->root_blkg = blkg;
-			q->root_rl.blkg = blkg;
-		}
-		return blkg;
-	}
+        if (blkcg == &blkcg_root) {
+            q->root_blkg = blkg;
+            q->root_rl.blkg = blkg;
+        }
+        if (!blkcg_bg) {
+            char name_buf[NAME_MAX + 1];
+            cgroup_name(blkg->blkcg->css.cgroup, name_buf, sizeof(name_buf));
+            if (!strncmp(name_buf, "background", strlen("background") + 1))
+                blkcg_bg = blkg->blkcg;
+        }
+        return blkg;
+    }
 
 	/* @blkg failed fully initialized, use the usual release path */
 	blkg_put(blkg);
