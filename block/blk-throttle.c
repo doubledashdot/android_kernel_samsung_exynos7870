@@ -1391,6 +1391,7 @@ static ssize_t tg_set_conf(struct kernfs_open_file *of,
 		   tg->bps[READ], tg->bps[WRITE],
 		   tg->iops[READ], tg->iops[WRITE]);
 
+	rcu_read_lock();
 	/*
 	 * Update has_rules[] flags for the updated tg's subtree.  A tg is
 	 * considered to have rules if either the tg itself or any of its
@@ -1400,6 +1401,7 @@ static ssize_t tg_set_conf(struct kernfs_open_file *of,
 	 */
 	blkg_for_each_descendant_pre(blkg, pos_css, ctx.blkg)
 		tg_update_has_rules(blkg_to_tg(blkg));
+	rcu_read_unlock();
 
 	/*
 	 * We're already holding queue_lock and know @tg is valid.  Let's
