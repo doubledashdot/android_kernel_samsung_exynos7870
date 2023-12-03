@@ -26,6 +26,7 @@ int __next_cpu_nr(int n, const cpumask_t *srcp)
 EXPORT_SYMBOL(__next_cpu_nr);
 #endif
 
+#if NR_CPUS > BITS_PER_LONG
 /**
  * cpumask_next_and - get the next cpu in *src1p & *src2p
  * @n: the cpu prior to the place to search (ie. return will be > @n)
@@ -62,6 +63,8 @@ int cpumask_any_but(const struct cpumask *mask, unsigned int cpu)
 			break;
 	return i;
 }
+EXPORT_SYMBOL(cpumask_any_but);
+#endif /* NR_CPUS > BITS_PER_LONG */
 
 /* These are not inline because of header tangles. */
 #ifdef CONFIG_CPUMASK_OFFSTACK
