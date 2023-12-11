@@ -949,7 +949,7 @@ mesh_plink_get_event(struct ieee80211_sub_if_data *sdata,
 	case WLAN_SP_MESH_PEERING_OPEN:
 		if (!matches_local)
 			event = OPN_RJCT;
-		if (!mesh_plink_free_count(sdata) ||
+		else if (!mesh_plink_free_count(sdata) ||
 		    (sta->plid && sta->plid != plid))
 			event = OPN_IGNR;
 		else
@@ -958,7 +958,7 @@ mesh_plink_get_event(struct ieee80211_sub_if_data *sdata,
 	case WLAN_SP_MESH_PEERING_CONFIRM:
 		if (!matches_local)
 			event = CNF_RJCT;
-		if (!mesh_plink_free_count(sdata) ||
+		else if (!mesh_plink_free_count(sdata) ||
 		    sta->llid != llid ||
 		    (sta->plid && sta->plid != plid))
 			event = CNF_IGNR;
