@@ -2540,7 +2540,8 @@ retry:
 	 * pages are pinned on the per-cpu lists. Drain them and try again
 	 */
 	if (!page && !drained) {
-		drain_all_pages();
+		if (!need_memory_boosting(NULL))
+			drain_all_pages();
 		drained = true;
 		goto retry;
 	}

@@ -1945,6 +1945,7 @@ enum mem_boost {
 	NO_BOOST,
 	BOOST_MID = 1,
 	BOOST_HIGH = 2,
+	BOOST_KILL = 3,
 };
 static int mem_boost_mode = NO_BOOST;
 static unsigned long last_mode_change;
@@ -1969,7 +1970,7 @@ static ssize_t mem_boost_mode_store(struct kobject *kobj,
 	int err;
 
 	err = kstrtoint(buf, 10, &mode);
-	if (err || mode > BOOST_HIGH || mode < NO_BOOST)
+	if (err || mode > BOOST_KILL || mode < NO_BOOST)
 		return -EINVAL;
 
 	mem_boost_mode = mode;
@@ -2087,14 +2088,19 @@ static inline bool mem_boost_pgdat_wmark(struct zone *zone)
 	return zone_watermark_ok_safe(zone, 0, low_wmark_pages(zone), 0, 0); //TODO: low, high, or (low + high)/2
 }
 
-static inline bool need_memory_boosting(struct zone *zone)
+#define MEM_BOOST_THRESHOLD ((600 * 1024 * 1024) / (PAGE_SIZE))
+bool need_memory_boosting(struct pglist_data *pgdat)
 {
 	bool ret;
+	unsigned long pgdatfile = node_page_state(pgdat, NR_ACTIVE_FILE) +
+				node_page_state(pgdat, NR_INACTIVE_FILE);
 
-	if (time_after(jiffies, last_mode_change + MEM_BOOST_MAX_TIME))
+	if (time_after(jiffies, last_mode_change + MEM_BOOST_MAX_TIME) ||
+			pgdatfile < MEM_BOOST_THRESHOLD)
 		mem_boost_mode = NO_BOOST;
 
 	switch (mem_boost_mode) {
+	case BOOST_KILL:
 	case BOOST_HIGH:
 		ret = true;
 		break;
@@ -2495,6 +2501,9 @@ static void shrink_lruvec(struct lruvec *lruvec, int swappiness,
 	}
 	blk_finish_plug(&plug);
 	sc->nr_reclaimed += nr_reclaimed;
+
+	if (need_memory_boosting(NULL))
+		return;
 
 	/*
 	 * Even if we did not try to evict anon pages at all, we want to
