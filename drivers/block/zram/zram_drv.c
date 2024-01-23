@@ -917,7 +917,7 @@ static ssize_t reset_store(struct device *dev,
 	}
 
 	/* Make sure all pending I/O is finished */
-	fsync_bdev(bdev);
+	sync_blockdev(bdev);
 	zram_reset_device(zram);
 
 	mutex_unlock(&bdev->bd_mutex);
