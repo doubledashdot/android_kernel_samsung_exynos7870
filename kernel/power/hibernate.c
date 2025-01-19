@@ -557,7 +557,11 @@ int hibernation_platform_enter(void)
 		goto Platform_finish;
 
 	local_irq_disable();
-	syscore_suspend();
+
+	error = syscore_suspend();
+	if (error)
+		goto Enable_irqs;
+
 	if (pm_wakeup_pending()) {
 		error = -EAGAIN;
 		goto Power_up;
@@ -569,6 +573,7 @@ int hibernation_platform_enter(void)
 
  Power_up:
 	syscore_resume();
+ Enable_irqs:
 	local_irq_enable();
 	enable_nonboot_cpus();
 
