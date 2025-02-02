@@ -730,7 +730,10 @@ static struct pci_bus *pci_alloc_child_bus(struct pci_bus *parent,
 
 add_dev:
 	ret = device_register(&child->dev);
-	WARN_ON(ret < 0);
+	if (WARN_ON(ret < 0)) {
+		put_device(&child->dev);
+		return NULL;
+	}
 
 	pcibios_add_bus(child);
 
