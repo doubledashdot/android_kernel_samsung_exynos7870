@@ -1408,10 +1408,9 @@ int unpoison_memory(unsigned long pfn)
 	int freeit = 0;
 	unsigned int nr_pages;
 
-	if (!pfn_valid(pfn))
-		return -ENXIO;
-
-	p = pfn_to_page(pfn);
+	p = pfn_to_online_page(pfn);
+	if (!p)
+		return -EIO;
 	page = compound_head(p);
 
 	if (!PageHWPoison(p)) {
