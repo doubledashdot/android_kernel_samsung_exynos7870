@@ -3472,6 +3472,8 @@ unsigned long hugetlb_change_protection(struct vm_area_struct *vma,
 			pages++;
 		}
 		spin_unlock(ptl);
+
+		cond_resched();
 	}
 	/*
 	 * Must flush TLB before releasing i_mmap_mutex: x86's huge_pmd_unshare
