@@ -4964,4 +4964,8 @@ CONFIG_DYNAMIC_FSYNC=y
 =======
 CONFIG_DYNAMIC_FSYNC=y
 CONFIG_BOEFFLA_WL_BLOCKER=y
+<<<<<<< HEAD
 >>>>>>> 46846fc50c (defcon; Enable Boeffla WL blocker)
+=======
+CONFIG_FRANDOM=y
+>>>>>>> d7c3e5d2c0 (configs: enable frandom)
