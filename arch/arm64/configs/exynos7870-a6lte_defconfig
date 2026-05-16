@@ -4945,7 +4945,12 @@ CONFIG_STATE_NOTIFIER=y
 CONFIG_POWERSUSPEND=y
 # CONFIG_POWERSUSPEND_DEBUG is not set
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> cb8ce7224e (defcon: Enable powersuspend)
 =======
 CONFIG_DYNAMIC_FSYNC=y 
 >>>>>>> 5153db1b57 (defcon: Enable DynamicFsync)
+=======
+CONFIG_DYNAMIC_FSYNC=y
+CONFIG_BOEFFLA_WL_BLOCKER=y
+>>>>>>> 46846fc50c (defcon; Enable Boeffla WL blocker)
