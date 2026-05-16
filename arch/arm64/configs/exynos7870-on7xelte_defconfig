@@ -4939,4 +4939,13 @@ CONFIG_OID_REGISTRY=y
 CONFIG_ARCH_HAS_SG_CHAIN=y
 
 # Additional configs
+<<<<<<< HEAD
 CONFIG_UKSM=y
+=======
+# CONFIG_UKSM is not set
+CONFIG_KSU=y
+CONFIG_KSU_MANUAL_HOOK=y
+CONFIG_STATE_NOTIFIER=y
+CONFIG_POWERSUSPEND=y
+# CONFIG_POWERSUSPEND_DEBUG is not set
+>>>>>>> cb8ce7224e (defcon: Enable powersuspend)
