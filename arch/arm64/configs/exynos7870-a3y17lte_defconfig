@@ -5025,4 +5025,14 @@ CONFIG_BOEFFLA_WL_BLOCKER=y
 >>>>>>> 46846fc50c (defcon; Enable Boeffla WL blocker)
 =======
 CONFIG_FRANDOM=y
+<<<<<<< HEAD
 >>>>>>> d7c3e5d2c0 (configs: enable frandom)
+=======
+CONFIG_EROFS_FS=y
+# CONFIG_EROFS_FS_DEBUG is not set
+CONFIG_EROFS_FS_XATTR=y
+CONFIG_EROFS_FS_POSIX_ACL=y
+CONFIG_EROFS_FS_SECURITY=y
+CONFIG_EROFS_FS_ZIP=y
+CONFIG_EROFS_FS_CLUSTER_PAGE_LIMIT=1
+>>>>>>> a7c0b93e34 (arm64: configs: enable erofs)
