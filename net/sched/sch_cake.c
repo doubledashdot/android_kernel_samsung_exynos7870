@@ -545,7 +545,7 @@ static int cake_set_ce(struct sk_buff *skb)
 		    skb_try_make_writable(skb, wlen))
 			return 0;
 
-		return IP6_ECN_set_ce(ipv6_hdr(skb));
+		return IP6_ECN_set_ce(skb, ipv6_hdr(skb));
 
 	default:
 		return 0;
