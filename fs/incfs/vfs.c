@@ -130,7 +130,7 @@ static const struct address_space_operations incfs_address_space_ops = {
 static const struct file_operations incfs_file_ops = {
 	.open = file_open,
 	.release = file_release,
-	.aio_read = generic_file_aio_read,
+	.read_iter = generic_file_read_iter,
 	.mmap = generic_file_mmap,
 	.splice_read = generic_file_splice_read,
 	.llseek = generic_file_llseek,
@@ -985,7 +985,7 @@ static int incfs_link(struct dentry *what, struct dentry *where)
 	int error = 0;
 
 	inode_lock_nested(pinode, I_MUTEX_PARENT);
-	error = vfs_link(what, pinode, where);
+    error = vfs_link(what, pinode, where, NULL);
 	inode_unlock(pinode);
 
 	dput(parent_dentry);
@@ -999,7 +999,7 @@ static int incfs_unlink(struct dentry *dentry)
 	int error = 0;
 
 	inode_lock_nested(pinode, I_MUTEX_PARENT);
-	error = vfs_unlink(pinode, dentry);
+	error = vfs_unlink(pinode, dentry, NULL);
 	inode_unlock(pinode);
 
 	dput(parent_dentry);
@@ -1086,7 +1086,7 @@ static int chmod(struct dentry *dentry, umode_t mode)
 	inode_lock(inode);
 	newattrs.ia_mode = (mode & S_IALLUGO) | (inode->i_mode & ~S_IALLUGO);
 	newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
-	error = notify_change(dentry, &newattrs);
+	error = notify_change(dentry, &newattrs, NULL);
 	inode_unlock(inode);
 	return error;
 }
@@ -1872,6 +1872,7 @@ static int dir_rename(struct inode *old_dir, struct dentry *old_dentry,
 
 	error = vfs_rename(d_inode(backing_old_dir_dentry), backing_old_dentry,
 			d_inode(backing_new_dir_dentry), backing_new_dentry,
+			NULL,
 			0);
 	if (error)
 		goto unlock_out;
@@ -2067,7 +2068,7 @@ static int incfs_setattr(struct dentry *dentry, struct iattr *ia)
 	}
 
 	inode_lock(d_inode(backing_dentry));
-	error = notify_change(backing_dentry, ia);
+	error = notify_change(backing_dentry, ia, NULL);
 	inode_unlock(d_inode(backing_dentry));
 
 	if (error)
