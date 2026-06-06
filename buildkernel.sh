@@ -135,7 +135,6 @@ configure_build() {
     DTBTOOL_DIR="$DEVICE_CODENAME_DIR/Dtbtool/"
     ANY_KERNEL3_DIR="$DEVICE_CODENAME_DIR/AnyKernel3/"
     FINAL_KERNEL_ZIP="$KERNEL_NAME-$DEVICE_CODENAME-$BUILD_STATUS-$DATE_POSTFIX-$TIME_POSTFIX-$BUILD_TYPE.zip"
-    BUILD_KERNEL_LOG="buildkernel-log-$DATE_POSTFIX-$TIME_POSTFIX.txt"
     export CROSS_COMPILE="$KERNEL_TOOLCHAIN_AARCH64"
     export CROSS_COMPILE_ARM32="$KERNEL_TOOLCHAIN_ARM32"
     export ARCH="$ARCH"
@@ -166,9 +165,8 @@ compile_kernel() {
     cd $DEVICE_CODENAME_DIR
     export CC=gcc
     export CROSS_COMPILE=aarch64-linux-gnu-
-    make O=out -j$(nproc) | tee $BUILD_KERNEL_LOG
+    make O=out -j$(nproc)
     abort_if_error
-    echo -e "$green**** Registro en $DEVICE_CODENAME_DIR/$BUILD_KERNEL_LOG ****$nocol"
 }
 
 verify_output_files() {
