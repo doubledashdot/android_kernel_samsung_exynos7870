@@ -65,7 +65,6 @@ validate_environment_variables() {
 
     abort_if_error
     show_status "Variables principales verificadas." "COMPLETE"
-    sleep 3
 }
 
 get_file_name() {
@@ -107,72 +106,6 @@ initial_function() {
     BUILD_START=$(date +"%s")
     abort_if_error 
     show_status "Directorios principales creados." "COMPLETE"
-    sleep 3
-}
-
-validate_dependencies() {
-    DEPENDENCIES={"pv" "git" "wget"}
-    MISSING_DEPENDENCIES={}
-
-    for dependency in "${DEPENDENCIES[@]}"; do
-        if ! command -v "$dependency" &> /dev/null; then
-            MISSING_DEPENDENCIES+={"$dependency"}
-        fi
-    done
-
-    if [ "${#MISSING_DEPENDENCIES[@]}" -gt 0 ]; then
-        echo "Las siguientes dependencias faltan en el sistema: ${MISSING_DEPENDENCIES[@]}"
-        read -p "¿Deseas instalar las dependencias faltantes? (s/n): " choice
-        if [[ "$choice" == [sS]* ]]; then
-            install_missing_dependencies "${MISSING_DEPENDENCIES[@]}"
-        else
-            echo "No se han instalado las dependencias faltantes. El script no puede continuar."
-            exit 1
-        fi
-    fi
-    abort_if_error
-    sleep 3
-}
-
-install_missing_dependencies() {
-    local dependencies_to_install={"$@"}
-    show_status "Instalando dependencias faltantes..." "STATUS"
-    
-    for dependency in "${dependencies_to_install[@]}"; do
-        if [ "$dependency" == "pv" ]; then
-            sudo apt-get install -y pv
-        elif [ "$dependency" == "git" ]; then
-            sudo apt-get install -y git
-        elif [ "$dependency" == "wget" ]; then
-            sudo apt-get install -y wget
-        fi
-
-        if [ $? -ne 0 ]; then
-            echo "Error al instalar la dependencia: $dependency"
-            exit 1
-        fi
-    done
-    abort_if_error
-    show_status "Dependencias faltantes instaladas correctamente." "COMPLETE"
-    sleep 3
-}
-
-install_dependencies() {
-    show_status "Instalando dependencias..." "STATUS"
-    if sudo apt-get update -y && sudo apt-get upgrade -y && sudo apt-get install -q -y \
-        dialog bash sed wget git curl zip tar jq expect make cmake automake \
-        autoconf llvm lld lldb clang gcc binutils bison perl gperf gawk flex \
-        bc python3 python2 zstd openssl unzip cpio bc bison build-essential \
-        ccache liblz4-tool libsdl1.2-dev libstdc++6 libxml2 libxml2-utils lzop \
-        pngcrush schedtool squashfs-tools xsltproc zlib1g-dev libncurses5-dev \
-        bzip2 gcc g++ libssl-dev gcc-aarch64-linux-gnu gcc-arm-linux-gnueabihf \
-        gcc-arm-linux-gnueabi dos2unix neofetch; then
-        abort_if_error
-        show_status "Dependencias instaladas correctamente." "COMPLETE"
-        sleep 3
-    else
-        abort_if_error
-    fi
 }
 
 verify_dtb_ziptool() {
@@ -181,7 +114,6 @@ verify_dtb_ziptool() {
         show_status "Verificando Dtbtool y AnyKernel3..." "STATUS"
         abort_if_error
         show_status "Archivos Dtbtool y AnyKernel3 encontrados." "COMPLETE"
-        sleep 3
 }
 
 cleanup_out() {
@@ -189,9 +121,7 @@ cleanup_out() {
     cd $DEVICE_CODENAME_DIR
     sudo mkdir -p out
     sudo chmod -R 777 out
-    abort_if_error
     show_status "Directorio de salida creado y configurado correctamente." "COMPLETE"
-    sleep 3
 }
 
 configure_build() {
@@ -219,7 +149,6 @@ configure_build() {
     MAKE="./makeparallel"
     abort_if_error
     show_status "Herramientas y Instrucciones configuradas correctamente." "COMPLETE"
-    sleep 3
 }
 
 configure_kernel() {
@@ -232,7 +161,6 @@ configure_kernel() {
     show_status "Version del kernel..." "STATUS"
     make $KERNEL_VERSION O=out
     show_status "Se configuro correctamente el kernel." "COMPLETE"    
-    sleep 3
 }
 
 compile_kernel() {
@@ -244,7 +172,6 @@ compile_kernel() {
     make -j$(nproc --all) CC=$CLANG_TOOLCHAIN CLANG_TRIPLE=$CLANG_TRIPLE O=out | tee $BUILD_KERNEL_LOG
     abort_if_error
     echo -e "$green**** Registro en $DEVICE_CODENAME_DIR/$BUILD_KERNEL_LOG ****$nocol"
-    sleep 3
 }
 
 verify_output_files() {
@@ -259,7 +186,6 @@ verify_output_files() {
     abort_if_error
     show_status "Archivos de salida verificados correctamente." "COMPLETE"
     echo -e "$green Compilación terminada con éxito.$nocol"
-    sleep 3
 }
 
 generate_dt() {
@@ -271,11 +197,10 @@ generate_dt() {
     sudo chmod +x $DTBTOOL_DIR/dtbtooloptimus
     sudo chmod +x $DEVICE_CODENAME_DIR/out/arch/arm64/boot/Image.gz-dtb
     sudo chmod +x $DEVICE_CODENAME_DIR/out/scripts/dtc/
-    sudo chmod +x $DEVICE_CODENAME_DIR/out/arch/arm64/boot/dts/qcom/
-    $DTBTOOL_DIR/dtbtooloptimus -o $DEVICE_CODENAME_DIR/out/arch/arm64/boot/Image.gz-dtb -s 2048 -p $DEVICE_CODENAME_DIR/out/scripts/dtc/ $DEVICE_CODENAME_DIR/out/arch/arm64/boot/dts/qcom/
+    sudo chmod +x $DEVICE_CODENAME_DIR/out/arch/arm64/boot/dts/
+    $DTBTOOL_DIR/dtbtooloptimus -o $DEVICE_CODENAME_DIR/out/arch/arm64/boot/Image.gz-dtb -s 2048 -p $DEVICE_CODENAME_DIR/out/scripts/dtc/ $DEVICE_CODENAME_DIR/out/arch/arm64/boot/dts/
     abort_if_error
     show_status "DT.img Generada correctamente." "COMPLETE"
-    sleep 3
 }
 
 create_final_zip() {
@@ -301,11 +226,12 @@ create_final_zip() {
     show_status "Comprimiendo ZIP!..." "STATUS"
     cd $ANY_KERNEL3_DIR
     zip -r9 $FINAL_KERNEL_ZIP * -x README $FINAL_KERNEL_ZIP
+    rm -rf $DEVICE_CODENAME_DIR/zip/
+    mkdir $DEVICE_CODENAME_DIR/zip/
     cp $DEVICE_CODENAME_DIR/AnyKernel3/$FINAL_KERNEL_ZIP $DEVICE_CODENAME_DIR/zip/$FINAL_KERNEL_ZIP
     echo -e "$green**** Archivo FINAL ZIP en $DEVICE_CODENAME_DIR/zip/$FINAL_KERNEL_ZIP ****"
     abort_if_error
     show_status "Archivo ZIP Creado correctamente." "COMPLETE"
-    sleep 3
 }
 
 clean_temp_files() {
@@ -313,10 +239,8 @@ clean_temp_files() {
     sudo rm -rf $ANY_KERNEL3_DIR/$FINAL_KERNEL_ZIP
     sudo rm -rf $DEVICE_CODENAME_DIR/AnyKernel3/Image.gz
     sudo rm -rf $DEVICE_CODENAME_DIR/AnyKernel3/Image.gz-dtb
-    sudo rm -rf $DEVICE_CODENAME_DIR/out/
     abort_if_error
     show_status "Archivos temporales borrados correctamente." "COMPLETE"
-    sleep 3
 }
 
 final_function() {
@@ -331,7 +255,6 @@ final_function() {
     echo -e "$green Proceso terminado en $(($DIFF / 60)) minutos(s) y $(($DIFF % 60)) segundos.$nocol"
     echo -e "$green Proceso iniciado en $(date -d @$BUILD_START '+%Y-%m-%d %H:%M:%S').$nocol"
     echo -e "$green Proceso finalizado en $(date '+%Y-%m-%d %H:%M:%S').$nocol"
-    sleep 3
     exit 1
 } 
 
