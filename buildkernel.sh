@@ -212,18 +212,15 @@ create_final_zip() {
     show_status "Removiendo Archivos Anteriores..." "STATUS"
     sudo rm -rf $ANY_KERNEL3_DIR/Image.gz-dtb
     sudo rm -rf $ANY_KERNEL3_DIR/Image.gz
-    sudo rm -rf $ANY_KERNEL3_DIR/$FINAL_KERNEL_ZIP
-    show_status "Copiando Image.gz..." "STATUS"
-    cp $DEVICE_CODENAME_DIR/out/arch/arm64/boot/Image.gz $ANY_KERNEL3_DIR/
-    show_status "Copiando Image.gz-dtb..." "STATUS"
+    sudo rm -rf $ANY_KERNEL3_DIR/*.zip
     cp $DEVICE_CODENAME_DIR/out/arch/arm64/boot/Image.gz-dtb $ANY_KERNEL3_DIR/
-    show_status "Image.gz & Image.gz-dtb Copiados." "COMPLETE"
+    show_status "Image.gz-dtb Copiados." "COMPLETE"
     show_status "Comprimiendo ZIP!..." "STATUS"
     cd $ANY_KERNEL3_DIR
     zip -r9 $FINAL_KERNEL_ZIP * -x README $FINAL_KERNEL_ZIP
     rm -rf $DEVICE_CODENAME_DIR/zip/
     mkdir $DEVICE_CODENAME_DIR/zip/
-    cp $DEVICE_CODENAME_DIR/AnyKernel3/$FINAL_KERNEL_ZIP $DEVICE_CODENAME_DIR/zip/$FINAL_KERNEL_ZIP
+    mv $DEVICE_CODENAME_DIR/AnyKernel3/*.zip $DEVICE_CODENAME_DIR/zip/$FINAL_KERNEL_ZIP
     echo -e "$green**** Archivo FINAL ZIP en $DEVICE_CODENAME_DIR/zip/$FINAL_KERNEL_ZIP ****"
     abort_if_error
     show_status "Archivo ZIP Creado correctamente." "COMPLETE"
