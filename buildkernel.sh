@@ -131,11 +131,6 @@ configure_build() {
     show_status "Iniciando instrucciones del script..." "STATUS"
     show_status "Configurando herramientas del script..." "STATUS"
     cd $DEVICE_CODENAME_DIR
-    KERNEL_TOOLCHAIN="$DEVICE_CODENAME_DIR/prebuilts/$AARCH64_LINUX_GNU_VERSION/bin/$AARCH64_LINUX_GNU_VERSION"
-    KERNEL_TOOLCHAIN_AARCH64="$DEVICE_CODENAME_DIR/prebuilts/$AARCH64_LINUX_ANDROID_VERSION/bin/$AARCH64_LINUX_ANDROID_VERSION"
-    KERNEL_TOOLCHAIN_ARM32="$DEVICE_CODENAME_DIR/prebuilts/$ARM_LINUX_ANDROIDEABI_VERSION/bin/$ARM_LINUX_ANDROIDEABI_VERSION"
-    CLANG_TOOLCHAIN="$DEVICE_CODENAME_DIR/prebuilts/$CLANG_VERSION/bin/$CLANG_VERSION_DIR"
-    CLANG_TRIPLE="$DEVICE_CODENAME_DIR/prebuilts/$AARCH64_LINUX_GNU_VERSION/bin/$AARCH64_LINUX_GNU_VERSION"
     KERNEL_VERSION="kernelversion"
     DTBTOOL_DIR="$DEVICE_CODENAME_DIR/Dtbtool/"
     ANY_KERNEL3_DIR="$DEVICE_CODENAME_DIR/AnyKernel3/"
@@ -169,7 +164,9 @@ compile_kernel() {
     echo -e "***********************************************$nocol" 
     show_status "Iniciando la compilación del kernel..." "STATUS"
     cd $DEVICE_CODENAME_DIR
-    make -j$(nproc --all) CC=$CLANG_TOOLCHAIN CLANG_TRIPLE=$CLANG_TRIPLE O=out | tee $BUILD_KERNEL_LOG
+    export CC=gcc
+    export CROSS_COMPILE=aarch64-linux-gnu-
+    make O=out -j$(nproc) | tee $BUILD_KERNEL_LOG
     abort_if_error
     echo -e "$green**** Registro en $DEVICE_CODENAME_DIR/$BUILD_KERNEL_LOG ****$nocol"
 }
