@@ -108,14 +108,6 @@ initial_function() {
     show_status "Directorios principales creados." "COMPLETE"
 }
 
-verify_dtb_ziptool() {
-    cd $SCRIPT_DIR
-
-        show_status "Verificando Dtbtool y AnyKernel3..." "STATUS"
-        abort_if_error
-        show_status "Archivos Dtbtool y AnyKernel3 encontrados." "COMPLETE"
-}
-
 cleanup_out() {
     show_status "Creando y configurando el directorio de salida..." "STATUS"
     cd $DEVICE_CODENAME_DIR
@@ -132,7 +124,6 @@ configure_build() {
     show_status "Configurando herramientas del script..." "STATUS"
     cd $DEVICE_CODENAME_DIR
     KERNEL_VERSION="kernelversion"
-    DTBTOOL_DIR="$DEVICE_CODENAME_DIR/Dtbtool/"
     ANY_KERNEL3_DIR="$DEVICE_CODENAME_DIR/AnyKernel3/"
     FINAL_KERNEL_ZIP="$KERNEL_NAME-$DEVICE_CODENAME-$BUILD_STATUS-$DATE_POSTFIX-$TIME_POSTFIX-$BUILD_TYPE.zip"
     export CROSS_COMPILE="$KERNEL_TOOLCHAIN_AARCH64"
@@ -183,21 +174,6 @@ verify_output_files() {
     echo -e "$green Compilación terminada con éxito.$nocol"
 }
 
-generate_dt() {
-    echo -e "$purple***********************************************"
-    echo "                   DT.img          "
-    echo -e "***********************************************$nocol"
-    show_status "Generando DT.img..." "STATUS"
-    cd $DEVICE_CODENAME_DIR
-    sudo chmod +x $DTBTOOL_DIR/dtbtooloptimus
-    sudo chmod +x $DEVICE_CODENAME_DIR/out/arch/arm64/boot/Image.gz-dtb
-    sudo chmod +x $DEVICE_CODENAME_DIR/out/scripts/dtc/
-    sudo chmod +x $DEVICE_CODENAME_DIR/out/arch/arm64/boot/dts/
-    $DTBTOOL_DIR/dtbtooloptimus -o $DEVICE_CODENAME_DIR/out/arch/arm64/boot/Image.gz-dtb -s 2048 -p $DEVICE_CODENAME_DIR/out/scripts/dtc/ $DEVICE_CODENAME_DIR/out/arch/arm64/boot/dts/
-    abort_if_error
-    show_status "DT.img Generada correctamente." "COMPLETE"
-}
-
 create_final_zip() {
     echo -e "$purple***********************************************"
     echo "            CREANDO ZIP FINAL           "
@@ -206,15 +182,12 @@ create_final_zip() {
     show_status "Verificando Image.gz & Image.gz-dtb..." "STATUS"
     ls $DEVICE_CODENAME_DIR/out/arch/arm64/boot/Image.gz
     ls $DEVICE_CODENAME_DIR/out/arch/arm64/boot/Image.gz-dtb
-    show_status "Verificando directorio AnyKERNEL3 y Dtbtool..." "STATUS"
     ls $ANY_KERNEL3_DIR
-    ls $DTBTOOL_DIR
     show_status "Removiendo Archivos Anteriores..." "STATUS"
-    sudo rm -rf $ANY_KERNEL3_DIR/Image.gz-dtb
     sudo rm -rf $ANY_KERNEL3_DIR/Image.gz
     sudo rm -rf $ANY_KERNEL3_DIR/*.zip
-    cp $DEVICE_CODENAME_DIR/out/arch/arm64/boot/Image.gz-dtb $ANY_KERNEL3_DIR/
-    show_status "Image.gz-dtb Copiados." "COMPLETE"
+    cp $DEVICE_CODENAME_DIR/out/arch/arm64/boot/Image.gz $ANY_KERNEL3_DIR/
+    show_status "Image.gz Copiados." "COMPLETE"
     show_status "Comprimiendo ZIP!..." "STATUS"
     cd $ANY_KERNEL3_DIR
     zip -r9 $FINAL_KERNEL_ZIP * -x README $FINAL_KERNEL_ZIP
@@ -230,7 +203,6 @@ clean_temp_files() {
     show_status "Borrando archivos temporales..." "STATUS"
     sudo rm -rf $ANY_KERNEL3_DIR/$FINAL_KERNEL_ZIP
     sudo rm -rf $DEVICE_CODENAME_DIR/AnyKernel3/Image.gz
-    sudo rm -rf $DEVICE_CODENAME_DIR/AnyKernel3/Image.gz-dtb
     abort_if_error
     show_status "Archivos temporales borrados correctamente." "COMPLETE"
 }
@@ -253,13 +225,11 @@ final_function() {
 main() {
     initial_function
     validate_environment_variables
-    verify_dtb_ziptool
     cleanup_out
     configure_build
     configure_kernel
     compile_kernel
     verify_output_files
-    generate_dt
     create_final_zip
     clean_temp_files
     final_function
