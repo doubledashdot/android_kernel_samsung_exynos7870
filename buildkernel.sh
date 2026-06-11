@@ -154,8 +154,8 @@ compile_kernel() {
     echo -e "***********************************************$nocol" 
     show_status "Iniciando la compilación del kernel..." "STATUS"
     cd $DEVICE_CODENAME_DIR
-    export CC=gcc
-    export CROSS_COMPILE=aarch64-linux-gnu-
+    export CC=$(pwd)/linaro/bin/aarch64-linux-gnu-gcc
+    export CROSS_COMPILE=$(pwd)/linaro/bin/aarch64-linux-gnu-
     make O=out -j$(nproc)
     abort_if_error
 }
