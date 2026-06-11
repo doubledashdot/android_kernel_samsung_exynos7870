@@ -165,8 +165,8 @@ verify_output_files() {
     echo "       VERIFICANDO ARCHIVOS DE SALIDA       "
     echo -e "***********************************************$nocol"
     show_status "Verificando archivos de salida..." "STATUS"
-    if [ ! -e "$DEVICE_CODENAME_DIR/out/arch/arm64/boot/Image.gz" ] || [ ! -e "$DEVICE_CODENAME_DIR/out/arch/arm64/boot/Image.gz-dtb" ]; then
-        echo -e "$red*** Error: Los archivos Image.gz o Image.gz-dtb no se encuentran. Compilación fallida.***$nocol"
+    if [ ! -e "$DEVICE_CODENAME_DIR/out/arch/arm64/boot/Image" ]; then
+        echo -e "$red*** Error: Los archivos Image no se encuentran. Compilación fallida.***$nocol"
         exit 1
     fi
     abort_if_error
@@ -179,15 +179,14 @@ create_final_zip() {
     echo "            CREANDO ZIP FINAL           "
     echo -e "***********************************************$nocol"
     show_status "Creando archivo ZIP final..." "STATUS"
-    show_status "Verificando Image.gz & Image.gz-dtb..." "STATUS"
-    ls $DEVICE_CODENAME_DIR/out/arch/arm64/boot/Image.gz
-    ls $DEVICE_CODENAME_DIR/out/arch/arm64/boot/Image.gz-dtb
+    show_status "Verificando Image..." "STATUS"
+    ls $DEVICE_CODENAME_DIR/out/arch/arm64/boot/Image
     ls $ANY_KERNEL3_DIR
     show_status "Removiendo Archivos Anteriores..." "STATUS"
-    sudo rm -rf $ANY_KERNEL3_DIR/Image.gz
+    sudo rm -rf $ANY_KERNEL3_DIR/Image
     sudo rm -rf $ANY_KERNEL3_DIR/*.zip
-    cp $DEVICE_CODENAME_DIR/out/arch/arm64/boot/Image.gz $ANY_KERNEL3_DIR/
-    show_status "Image.gz Copiados." "COMPLETE"
+    cp $DEVICE_CODENAME_DIR/out/arch/arm64/boot/Image $ANY_KERNEL3_DIR/
+    show_status "Image Copiados." "COMPLETE"
     show_status "Comprimiendo ZIP!..." "STATUS"
     cd $ANY_KERNEL3_DIR
     zip -r9 $FINAL_KERNEL_ZIP * -x README $FINAL_KERNEL_ZIP
@@ -202,7 +201,7 @@ create_final_zip() {
 clean_temp_files() {
     show_status "Borrando archivos temporales..." "STATUS"
     sudo rm -rf $ANY_KERNEL3_DIR/$FINAL_KERNEL_ZIP
-    sudo rm -rf $DEVICE_CODENAME_DIR/AnyKernel3/Image.gz
+    sudo rm -rf $DEVICE_CODENAME_DIR/AnyKernel3/Image
     abort_if_error
     show_status "Archivos temporales borrados correctamente." "COMPLETE"
 }
