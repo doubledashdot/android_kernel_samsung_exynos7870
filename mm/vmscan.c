@@ -66,9 +66,6 @@ struct scan_control {
 	/* This context's GFP mask */
 	gfp_t gfp_mask;
 
-<<<<<<< HEAD
-	/* Allocation order */
-=======
 	/* The anonymous pages on the current node are below vm.anon_min_kbytes */
 	unsigned int anon_below_min:1;
 
@@ -78,15 +75,7 @@ struct scan_control {
 	/* The clean file pages on the current node are below vm.clean_min_kbytes */
 	unsigned int clean_below_min:1;
 
-	int may_writepage;
-
-	/* Can mapped pages be reclaimed? */
-	int may_unmap;
-
-	/* Can pages be swapped as part of reclaim? */
-	int may_swap;
-
->>>>>>> 442d272bc (mm/vmscan: add sysctl knobs for protecting the working set [le9ec])
+	/* Allocation order */
 	int order;
 
 	/*
@@ -2333,69 +2322,71 @@ static void get_scan_count(struct lruvec *lruvec, int swappiness,
 	fraction[1] = fp;
 	denominator = ap + fp + 1;
 out:
-	some_scanned = false;
-	/* Only use force_scan on second pass. */
-	for (pass = 0; !some_scanned && pass < 2; pass++) {
-		for_each_evictable_lru(lru) {
-			int file = is_file_lru(lru);
-			unsigned long size;
-			unsigned long scan;
+    some_scanned = false;
+    /* Only use force_scan on second pass. */
+    for (pass = 0; !some_scanned && pass < 2; pass++) {
+        for_each_evictable_lru(lru) {
+            int file = is_file_lru(lru);
+            unsigned long size;
+            unsigned long scan;
 
-			size = get_lru_size(lruvec, lru);
-			scan = size >> sc->priority;
+            size = get_lru_size(lruvec, lru);
+            scan = size >> sc->priority;
 
-			if (!scan && pass && force_scan)
-				scan = min(size, SWAP_CLUSTER_MAX);
+            if (!scan && pass && force_scan)
+                scan = min(size, SWAP_CLUSTER_MAX);
 
-			switch (scan_balance) {
-			case SCAN_EQUAL:
-				/* Scan lists relative to size */
-				break;
-			case SCAN_FRACT:
-				/*
-				 * Scan types proportional to swappiness and
-				 * their relative recent reclaim efficiency.
-				 */
-				scan = div64_u64(scan * fraction[file],
-							denominator);
-				break;
-			case SCAN_FILE:
-			case SCAN_ANON:
-				/* Scan one type exclusively */
-				if ((scan_balance == SCAN_FILE) != file)
-					scan = 0;
-				break;
-			default:
-				/* Look ma, no brain */
-				BUG();
-			}
-			nr[lru] = scan;
-			/*
-			 * Skip the second pass and don't force_scan,
-			 * if we found something to scan.
-			 */
-			some_scanned |= !!scan;
-		}
-		/*
-		 * Hard protection of the working set.
-		 */
-		if (file) {
-			/*
-			 * Don't reclaim file pages when the amount of
-			 * clean file pages is below vm.clean_min_kbytes.
-			 */
-			if (sc->clean_below_min)
-				scan = 0;
-		} else {
-			/*
-			 * Don't reclaim anonymous pages when their
-			 * amount is below vm.anon_min_kbytes.
-			 */
-			if (sc->anon_below_min)
-				scan = 0;
-		}
-		nr[lru] = scan;
-	}
+            switch (scan_balance) {
+            case SCAN_EQUAL:
+                /* Scan lists relative to size */
+                break;
+            case SCAN_FRACT:
+                /*
+                 * Scan types proportional to swappiness and
+                 * their relative recent reclaim efficiency.
+                 */
+                scan = div64_u64(scan * fraction[file], denominator);
+                break;
+            case SCAN_FILE:
+            case SCAN_ANON:
+                /* Scan one type exclusively */
+                if ((scan_balance == SCAN_FILE) != file)
+                    scan = 0;
+                break;
+            default:
+                /* Look ma, no brain */
+                BUG();
+            }
+
+            /*
+             * Hard protection of the working set.
+             * (Doğru yer: Döngünün içinde, nr[lru] atanmadan hemen önce)
+             */
+            if (file) {
+                /*
+                 * Don't reclaim file pages when the amount of
+                 * clean file pages is below vm.clean_min_kbytes.
+                 */
+                if (sc->clean_below_min)
+                    scan = 0;
+            } else {
+                /*
+                 * Don't reclaim anonymous pages when their
+                 * amount is below vm.anon_min_kbytes.
+                 */
+                if (sc->anon_below_min)
+                    scan = 0;
+            }
+
+            nr[lru] = scan;
+            
+            /*
+             * Skip the second pass and don't force_scan,
+             * if we found something to scan.
+             */
+            some_scanned |= !!scan;
+        }
+    }
 }
 
 /*

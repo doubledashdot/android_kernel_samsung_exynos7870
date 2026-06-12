@@ -324,6 +324,13 @@ static int min_sched_tunable_scaling = SCHED_TUNABLESCALING_NONE;
 static int max_sched_tunable_scaling = SCHED_TUNABLESCALING_END-1;
 #endif /* CONFIG_SMP */
 #endif /* CONFIG_SCHED_DEBUG */
+#ifdef CONFIG_SCHED_BORE
+static int bore_zero = 0;
+static int bore_one = 1;
+static int bore_three = 3;
+static int bore_sixty_four = 64;
+static int bore_maxval_12_bits = 4095;
+#endif
 
 #ifdef CONFIG_COMPACTION
 static int min_extfrag_threshold;
@@ -388,69 +395,6 @@ static struct ctl_table kern_table[] = {
 	},
 #endif
 	{
-#ifdef CONFIG_SCHED_BORE
-	{
-		.procname	= "sched_bore",
-		.data		= &sched_bore,
-		.maxlen		= sizeof(int),
-		.mode		= 0644,
-		.proc_handler = proc_dointvec_minmax,
-		.extra1		= &one,
-		.extra2		= &one,
-	},
-	{
-		.procname	= "sched_burst_smoothness_long",
-		.data		= &sched_burst_smoothness_long,
-		.maxlen		= sizeof(int),
-		.mode		= 0644,
-		.proc_handler = proc_dointvec_minmax,
-		.extra1		= &zero,
-		.extra2		= &one,
-	},
-	{
-		.procname	= "sched_burst_smoothness_short",
-		.data		= &sched_burst_smoothness_short,
-		.maxlen		= sizeof(int),
-		.mode		= 0644,
-		.proc_handler = proc_dointvec_minmax,
-		.extra1		= &zero,
-		.extra2		= &one,
-	},
-	{
-		.procname	= "sched_burst_fork_atavistic",
-		.data		= &sched_burst_fork_atavistic,
-		.maxlen		= sizeof(int),
-		.mode		= 0644,
-		.proc_handler = proc_dointvec_minmax,
-		.extra1		= &zero,
-		.extra2		= &three,
-	},
-	{
-		.procname	= "sched_burst_penalty_offset",
-		.data		= &sched_burst_penalty_offset,
-		.maxlen		= sizeof(int),
-		.mode		= 0644,
-		.proc_handler = proc_dointvec_minmax,
-		.extra1		= &zero,
-		.extra2		= &sixty_four,
-	},
-	{
-		.procname	= "sched_burst_penalty_scale",
-		.data		= &sched_burst_penalty_scale,
-		.maxlen		= sizeof(int),
-		.mode		= 0644,
-		.proc_handler = proc_dointvec_minmax,
-		.extra1		= &zero,
-		.extra2		= &maxval_12_bits,
-	},
-	{
-		.procname	= "sched_burst_cache_lifetime",
-		.data		= &sched_burst_cache_lifetime,
-		.maxlen		= sizeof(int),
-		.mode		= 0644,
-		.proc_handler = proc_dointvec,
-	},
-#endif // CONFIG_SCHED_BORE
 		.procname	= "sched_wakeup_granularity_ns",
 		.data		= &sysctl_sched_wakeup_granularity,
 		.maxlen		= sizeof(unsigned int),
@@ -459,6 +403,69 @@ static struct ctl_table kern_table[] = {
 		.extra1		= &min_wakeup_granularity_ns,
 		.extra2		= &max_wakeup_granularity_ns,
 	},
+#ifdef CONFIG_SCHED_BORE
+    {
+        .procname      = "sched_bore",
+        .data          = &sched_bore,
+        .maxlen        = sizeof(int),
+        .mode          = 0644,
+        .proc_handler  = proc_dointvec_minmax,
+        .extra1        = &bore_one,
+        .extra2        = &bore_one,
+    },
+    {
+        .procname      = "sched_burst_smoothness_long",
+        .data          = &sched_burst_smoothness_long,
+        .maxlen        = sizeof(int),
+        .mode          = 0644,
+        .proc_handler  = proc_dointvec_minmax,
+        .extra1        = &bore_zero,
+        .extra2        = &bore_one,
+    },
+    {
+        .procname      = "sched_burst_smoothness_short",
+        .data          = &sched_burst_smoothness_short,
+        .maxlen        = sizeof(int),
+        .mode          = 0644,
+        .proc_handler  = proc_dointvec_minmax,
+        .extra1        = &bore_zero,
+        .extra2        = &bore_one,
+    },
+    {
+        .procname      = "sched_burst_fork_atavistic",
+        .data          = &sched_burst_fork_atavistic,
+        .maxlen        = sizeof(int),
+        .mode          = 0644,
+        .proc_handler  = proc_dointvec_minmax,
+        .extra1        = &bore_zero,
+        .extra2        = &bore_three,
+    },
+    {
+        .procname      = "sched_burst_penalty_offset",
+        .data          = &sched_burst_penalty_offset,
+        .maxlen        = sizeof(int),
+        .mode          = 0644,
+        .proc_handler  = proc_dointvec_minmax,
+        .extra1        = &bore_zero,
+        .extra2        = &bore_sixty_four,
+    },
+    {
+        .procname      = "sched_burst_penalty_scale",
+        .data          = &sched_burst_penalty_scale,
+        .maxlen        = sizeof(int),
+        .mode          = 0644,
+        .proc_handler  = proc_dointvec_minmax,
+        .extra1        = &bore_zero,
+        .extra2        = &bore_maxval_12_bits,
+    },
+    {
+        .procname      = "sched_burst_cache_lifetime",
+        .data          = &sched_burst_cache_lifetime,
+        .maxlen        = sizeof(int),
+        .mode          = 0644,
+        .proc_handler  = proc_dointvec,
+    },
+#endif // CONFIG_SCHED_BORE
 #ifdef CONFIG_SMP
 	{
 		.procname	= "sched_tunable_scaling",

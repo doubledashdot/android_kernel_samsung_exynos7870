@@ -53,12 +53,8 @@
 
 /*
  * Targeted preemption latency for CPU-bound tasks:
-<<<<<<< HEAD
- * (default: 5ms * (1 + ilog(ncpus)), units: nanoseconds)
-=======
  * (BORE default: 24ms constant, units: nanoseconds)
- * (CFS  default: 6ms * (1 + ilog(ncpus)), units: nanoseconds)
->>>>>>> c3c45a3d3 (sched: Introduce BORE Scheduler (5.1.0))
+ * (default: 5ms * (1 + ilog(ncpus)), units: nanoseconds)
  *
  * NOTE: this latency value is not the same as the concept of
  * 'timeslice length' - timeslices in CFS are of variable length
@@ -68,18 +64,13 @@
  * (to see the precise effective timeslice length of your workload,
  *  run vmstat and monitor the context-switches (cs) field)
  */
-<<<<<<< HEAD
-unsigned int sysctl_sched_latency = 4000000ULL;
-unsigned int normalized_sysctl_sched_latency = 4000000ULL;
-=======
 #ifdef CONFIG_SCHED_BORE
 unsigned int sysctl_sched_latency			= 24000000ULL;
 static unsigned int normalized_sysctl_sched_latency	= 24000000ULL;
 #else // CONFIG_SCHED_BORE
-unsigned int sysctl_sched_latency = 6000000ULL;
-unsigned int normalized_sysctl_sched_latency = 6000000ULL;
+unsigned int sysctl_sched_latency = 4000000ULL;
+unsigned int normalized_sysctl_sched_latency = 4000000ULL;
 #endif // CONFIG_SCHED_BORE
->>>>>>> c3c45a3d3 (sched: Introduce BORE Scheduler (5.1.0))
 
 /*
  * The initial- and re-scaling of tunables is configurable
@@ -95,30 +86,22 @@ unsigned int normalized_sysctl_sched_latency = 6000000ULL;
 enum sched_tunable_scaling sysctl_sched_tunable_scaling = SCHED_TUNABLESCALING_NONE;
 #else // CONFIG_SCHED_BORE
 enum sched_tunable_scaling sysctl_sched_tunable_scaling
-<<<<<<< HEAD
 	= SCHED_TUNABLESCALING_NONE;
-=======
 	= SCHED_TUNABLESCALING_LOG;
 #endif // CONFIG_SCHED_BORE
->>>>>>> c3c45a3d3 (sched: Introduce BORE Scheduler (5.1.0))
 
 /*
  * Minimal preemption granularity for CPU-bound tasks:
  * (BORE default: 3 msec constant, units: nanoseconds)
  * (CFS  default: 0.75 msec * (1 + ilog(ncpus)), units: nanoseconds)
  */
-<<<<<<< HEAD
-unsigned int sysctl_sched_min_granularity = 550000ULL;
-unsigned int normalized_sysctl_sched_min_granularity = 550000ULL;
-=======
 #ifdef CONFIG_SCHED_BORE
 unsigned int sysctl_sched_min_granularity			= 3000000ULL;
 unsigned int normalized_sysctl_sched_min_granularity	= 3000000ULL;
 #else // CONFIG_SCHED_BORE
-unsigned int sysctl_sched_min_granularity = 750000ULL;
-unsigned int normalized_sysctl_sched_min_granularity = 750000ULL;
+unsigned int sysctl_sched_min_granularity = 550000ULL;
+unsigned int normalized_sysctl_sched_min_granularity = 550000ULL;
 #endif // CONFIG_SCHED_BORE
->>>>>>> c3c45a3d3 (sched: Introduce BORE Scheduler (5.1.0))
 
 /*
  * is kept at sysctl_sched_latency / sysctl_sched_min_granularity
@@ -6331,7 +6314,6 @@ static void yield_task_fair(struct rq *rq)
      * so we don't do microscopic update in schedule()
      * and double the fastpath cost.
      */
-    rq_clock_skip_update(rq, true);
     set_skip_buddy(se);
 }
 
@@ -9570,13 +9552,9 @@ static void task_fork_fair(struct task_struct *p)
 
 	if (curr)
 		se->vruntime = curr->vruntime;
-<<<<<<< HEAD
-=======
-	}
 #ifdef CONFIG_SCHED_BORE
 	update_burst_score(se);
 #endif // CONFIG_SCHED_BORE
->>>>>>> c3c45a3d3 (sched: Introduce BORE Scheduler (5.1.0))
 	place_entity(cfs_rq, se, 1);
 
 	if (sysctl_sched_child_runs_first && curr && entity_before(curr, se)) {
