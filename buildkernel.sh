@@ -187,7 +187,7 @@ create_final_zip() {
     sudo rm -rf $ANY_KERNEL3_DIR/dtb
     sudo rm -rf $ANY_KERNEL3_DIR/*.zip
     cp $DEVICE_CODENAME_DIR/out/arch/arm64/boot/Image $ANY_KERNEL3_DIR/
-    cat $(ls $DEVICE_CODENAME_DIR/out/arch/arm64/boot/dts/exynos7870-j7velte_sea_open_*.dtb | sort) > $ANY_KERNEL3_DIR/dtb
+    cat $(ls $DEVICE_CODENAME_DIR/out/arch/arm64/boot/dts/exynos7870-j7velte_sea_open_*.dtb | sort) > $ANY_KERNEL3_DIR/extra
     show_status "Image Copiados." "COMPLETE"
     show_status "Comprimiendo ZIP!..." "STATUS"
     cd $ANY_KERNEL3_DIR
