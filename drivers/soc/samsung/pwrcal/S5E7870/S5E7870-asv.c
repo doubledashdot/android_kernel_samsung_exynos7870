@@ -634,9 +634,9 @@ static int dvfscpucl0_get_asv_table(unsigned int *table)
 	{
 	/* CL0 Voltage Override
 	Define Needed Voltages manually */
-	table[0] = 1200000;
+	table[0] = 1400000;
 	table[1] = 1375000;
-	table[2] = 1150000;
+	table[2] = 1200000;
 	table[3] = 1000000;
 	table[4] = 950000;
 	table[5] = 900000;
@@ -666,9 +666,9 @@ static int dvfscpucl1_get_asv_table(unsigned int *table)
 	{
 	/* CL1 Voltage Override
 	Define Needed Voltages manually */
-	table[0] = 1200000;
+	table[0] = 1375000;
 	table[1] = 1325000;
-	table[2] = 1150000;
+	table[2] = 1200000;
 	table[3] = 1000000;
 	table[4] = 950000;
 	table[5] = 900000;
