@@ -180,7 +180,7 @@ void rearm_wake_irq(unsigned int irq)
 
 	desc->istate &= ~IRQS_SUSPENDED;
 	irqd_set(&desc->irq_data, IRQD_WAKEUP_ARMED);
-	__enable_irq(desc);
+	__enable_irq(desc, irq);
 
 	irq_put_desc_busunlock(desc, flags);
 }
