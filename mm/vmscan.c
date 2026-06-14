@@ -1536,8 +1536,6 @@ static int current_may_throttle(void)
 		bdi_write_congested(current->backing_dev_info);
 }
 
-static inline bool need_memory_boosting(struct zone *zone);
-
 /*
  * shrink_inactive_list() is a helper for shrink_zone().  It returns the number
  * of reclaimed pages
@@ -2088,6 +2086,31 @@ static inline bool mem_boost_pgdat_wmark(struct zone *zone)
 	return zone_watermark_ok_safe(zone, 0, low_wmark_pages(zone), 0, 0); //TODO: low, high, or (low + high)/2
 }
 
+static int mem_boost_cpu_callback(struct notifier_block *nfb,
+                                   unsigned long action,
+                                   void *hcpu)
+{
+        switch (action) {
+        case CPU_ONLINE:
+        case CPU_ONLINE_FROZEN:
+                mem_boost_mode = BOOST_MID;
+                break;
+
+        case CPU_DOWN_PREPARE:
+        case CPU_DOWN_PREPARE_FROZEN:
+                mem_boost_mode = NO_BOOST;
+                break;
+
+        default:
+                break;
+        }
+        return NOTIFY_OK;
+}
+
+static struct notifier_block mem_boost_nb = {
+        .notifier_call = mem_boost_cpu_callback,
+};
+
 #define MEM_BOOST_THRESHOLD ((600 * 1024 * 1024) / (PAGE_SIZE))
 bool need_memory_boosting(struct pglist_data *pgdat)
 {
@@ -2105,7 +2128,7 @@ bool need_memory_boosting(struct pglist_data *pgdat)
 		ret = true;
 		break;
 	case BOOST_MID:
-		ret = mem_boost_pgdat_wmark(zone) ? false : true;
+		ret = (pgdatfile < (MEM_BOOST_THRESHOLD / 2));
 		break;
 	case NO_BOOST:
 	default:
@@ -3885,9 +3908,7 @@ static int __init kswapd_init(void)
 	swap_setup();
 	for_each_node_state(nid, N_MEMORY)
  		kswapd_run(nid);
-	ret = cpuhp_setup_state_nocalls(CPUHP_AP_ONLINE_DYN,
-					"mm/vmscan:online", kswapd_cpu_online,
-					NULL);
+	register_hotcpu_notifier(&mem_boost_nb);
 	WARN_ON(ret < 0);
 #ifdef CONFIG_SYSFS
 	if (sysfs_create_group(mm_kobj, &vmscan_attr_group))
