@@ -113,7 +113,7 @@ struct cpu_hstate {
 		.cpu_nr = NR_CPUS,
 	}, {
 		.state = H1,
-		.cpu_nr = NR_CPUS / 2,
+		.cpu_nr = NR_CPUS,
 	},
 };
 
