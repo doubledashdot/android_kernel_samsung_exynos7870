@@ -9,7 +9,7 @@
 #define show_dev(dev)		MAJOR(dev), MINOR(dev)
 #define show_dev_ino(entry)	show_dev(entry->dev), (unsigned long)entry->ino
 
-TRACE_DEFINE_ENUM(CP_PAUSE);
+/* TRACE_DEFINE_ENUM(CP_PAUSE); */
 
 #define show_block_type(type)						\
 	__print_symbolic(type,						\

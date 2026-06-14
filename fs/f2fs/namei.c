@@ -863,10 +863,7 @@ static int f2fs_rename(struct inode *old_dir, struct dentry *old_dentry,
 			return err;
 	}
 
-	err = dquot_initialize(old_dir);
-	if (err)
-		goto out;
-
+	dquot_initialize(old_dir);
 	dquot_initialize(new_dir);
 
 	if (new_inode)
