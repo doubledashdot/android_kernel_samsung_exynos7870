@@ -11,7 +11,8 @@ SCRIPT_NAME="Kyliz"
 SCRIPT_VERSION="v1.2.6 STABLE"
 
 DEVICE_CODENAME="j7velte"
-KERNEL_DEFCONFIG="exynos7870-j7velte_defconfig"
+PLATFORM_DEFCONFIG="exynos7870_defconfig"
+DEVICE_DEFCONFIG="$DEVICE_CODENAME.config"
 BUILD_STATUS="UNOFFICIAL"
 BUILD_TYPE="BETA"
 KERNEL_NAME="KernelSU"
@@ -142,7 +143,7 @@ configure_kernel() {
     echo -e "***********************************************$nocol"
     cd $DEVICE_CODENAME_DIR
     show_status "Configurando el kernel..." "STATUS"
-    make $KERNEL_DEFCONFIG O=out
+    make $PLATFORM_DEFCONFIG $DEVICE_DEFCONFIG O=out
     show_status "Version del kernel..." "STATUS"
     make $KERNEL_VERSION O=out
     show_status "Se configuro correctamente el kernel." "COMPLETE"    
