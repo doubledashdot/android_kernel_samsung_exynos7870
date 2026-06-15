@@ -248,6 +248,10 @@ struct zs_pool {
 	struct size_class **size_class;
 	struct kmem_cache *handle_cachep;
 
+    struct {
+        atomic_long_t pages_compacted;
+    } stats;
+
 	atomic_long_t pages_allocated;
 
 	/* Compact classes */
@@ -1813,7 +1817,7 @@ static unsigned long zs_shrinker_scan(struct shrinker *shrinker,
 	struct zs_pool *pool = container_of(shrinker, struct zs_pool,
 			shrinker);
 
-	pages_freed = pool->stats.pages_compacted;
+	pages_freed = atomic_long_read(&pool->stats.pages_compacted);
 	/*
 	 * Compact classes and calculate compaction delta.
 	 * Can run concurrently with a manually triggered
