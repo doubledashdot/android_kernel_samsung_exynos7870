@@ -730,6 +730,13 @@ static struct boost_policy *alloc_boost_policy(void)
 		goto free_b;
 	}
 
+	/* Defaults */
+	b->state = DRIVER_ENABLED;
+	b->ib.duration_ms = 1500;
+	b->ib.adj_duration_ms = 1500;
+	b->ib.freq[0] = 1794000;
+	b->ib.freq[1] = 1794000;
+
 	return b;
 
 free_b:
