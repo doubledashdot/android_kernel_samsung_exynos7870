@@ -34,7 +34,7 @@
 #include "exynos_thermal_common.h"
 
 #if defined(CONFIG_GPU_THERMAL)
-#ifdef CONFIG_MALI_R30P0
+#if defined(CONFIG_MALI_R30P0) || defined(CONFIG_MALI_R32P0)
 int gpu_dvfs_get_max_freq(void)
 {
 	return gpu_dvfs_get_clock(0);
