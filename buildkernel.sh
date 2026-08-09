@@ -42,7 +42,7 @@ initial_function() {
 
 cleanup_out() {
     cd $DEVICE_CODENAME_DIR
-    sudo mkdir -p out
+    mkdir -p out
 }
 
 configure_build() {
