@@ -419,12 +419,7 @@ static int unix_dgram_peer_wake_me(struct sock *sk, struct sock *other)
 
 	connected = unix_dgram_peer_wake_connect(sk, other);
 
-	/* If other is SOCK_DEAD, we want to make sure we signal
-	 * POLLOUT, such that a subsequent write() can get a
-	 * -ECONNREFUSED. Otherwise, if we haven't queued any skbs
-	 * to other and its full, we will hang waiting for POLLOUT.
-	 */
-	if (unix_recvq_full_lockless(other) && !sock_flag(other, SOCK_DEAD))
+	if (unix_recvq_full(other))
 		return 1;
 
 	if (connected)
@@ -514,7 +509,7 @@ static void unix_release_sock(struct sock *sk, int embrion)
 	/* Clear state */
 	unix_state_lock(sk);
 	sock_orphan(sk);
-	WRITE_ONCE(sk->sk_shutdown, SHUTDOWN_MASK);
+	sk->sk_shutdown = SHUTDOWN_MASK;
 	path	     = u->path;
 	u->path.dentry = NULL;
 	u->path.mnt = NULL;
@@ -530,7 +525,7 @@ static void unix_release_sock(struct sock *sk, int embrion)
 		if (sk->sk_type == SOCK_STREAM || sk->sk_type == SOCK_SEQPACKET) {
 			unix_state_lock(skpair);
 			/* No more writes */
-			WRITE_ONCE(skpair->sk_shutdown, SHUTDOWN_MASK);
+			skpair->sk_shutdown = SHUTDOWN_MASK;
 			if (!skb_queue_empty(&sk->sk_receive_queue) || embrion)
 				skpair->sk_err = ECONNRESET;
 			unix_state_unlock(skpair);
@@ -570,7 +565,7 @@ static void unix_release_sock(struct sock *sk, int embrion)
 	 *	  What the above comment does talk about? --ANK(980817)
 	 */
 
-	if (READ_ONCE(unix_tot_inflight))
+	if (unix_tot_inflight)
 		unix_gc();		/* Garbage collect fds */
 }
 
@@ -762,7 +757,7 @@ static struct sock *unix_create1(struct net *net, struct socket *sock)
 				&af_unix_sk_receive_queue_lock_key);
 
 	sk->sk_write_space	= unix_write_space;
-	sk->sk_max_ack_backlog	= READ_ONCE(net->unx.sysctl_max_dgram_qlen);
+	sk->sk_max_ack_backlog	= net->unx.sysctl_max_dgram_qlen;
 	sk->sk_destruct		= unix_sock_destructor;
 	u	  = unix_sk(sk);
 	u->path.dentry = NULL;
@@ -1175,7 +1170,7 @@ static long unix_wait_for_peer(struct sock *other, long timeo)
 
 	sched = !sock_flag(other, SOCK_DEAD) &&
 		!(other->sk_shutdown & RCV_SHUTDOWN) &&
-		unix_recvq_full_lockless(other);
+		unix_recvq_full(other);
 
 	unix_state_unlock(other);
 
@@ -1844,7 +1839,7 @@ static int unix_stream_sendmsg(struct kiocb *kiocb, struct socket *sock,
 			goto out_err;
 	}
 
-	if (READ_ONCE(sk->sk_shutdown) & SEND_SHUTDOWN)
+	if (sk->sk_shutdown & SEND_SHUTDOWN)
 		goto pipe_err;
 
 	while (sent < len) {
@@ -2288,7 +2283,7 @@ static int unix_shutdown(struct socket *sock, int mode)
 	++mode;
 
 	unix_state_lock(sk);
-	WRITE_ONCE(sk->sk_shutdown, sk->sk_shutdown | mode);
+	sk->sk_shutdown |= mode;
 	other = unix_peer(sk);
 	if (other)
 		sock_hold(other);
@@ -2305,7 +2300,7 @@ static int unix_shutdown(struct socket *sock, int mode)
 		if (mode&SEND_SHUTDOWN)
 			peer_mode |= RCV_SHUTDOWN;
 		unix_state_lock(other);
-		WRITE_ONCE(other->sk_shutdown, other->sk_shutdown | peer_mode);
+		other->sk_shutdown |= peer_mode;
 		unix_state_unlock(other);
 		other->sk_state_change(other);
 		if (peer_mode == SHUTDOWN_MASK)
@@ -2324,7 +2319,7 @@ long unix_inq_len(struct sock *sk)
 	struct sk_buff *skb;
 	long amount = 0;
 
-	if (READ_ONCE(sk->sk_state) == TCP_LISTEN)
+	if (sk->sk_state == TCP_LISTEN)
 		return -EINVAL;
 
 	spin_lock(&sk->sk_receive_queue.lock);
@@ -2378,18 +2373,16 @@ static unsigned int unix_poll(struct file *file, struct socket *sock, poll_table
 {
 	struct sock *sk = sock->sk;
 	unsigned int mask;
-	u8 shutdown;
 
 	sock_poll_wait(file, sk_sleep(sk), wait);
 	mask = 0;
-	shutdown = READ_ONCE(sk->sk_shutdown);
 
 	/* exceptional events? */
 	if (sk->sk_err)
 		mask |= POLLERR;
-	if (shutdown == SHUTDOWN_MASK)
+	if (sk->sk_shutdown == SHUTDOWN_MASK)
 		mask |= POLLHUP;
-	if (shutdown & RCV_SHUTDOWN)
+	if (sk->sk_shutdown & RCV_SHUTDOWN)
 		mask |= POLLRDHUP | POLLIN | POLLRDNORM;
 
 	/* readable? */
@@ -2416,20 +2409,18 @@ static unsigned int unix_dgram_poll(struct file *file, struct socket *sock,
 {
 	struct sock *sk = sock->sk, *other;
 	unsigned int mask, writable;
-	u8 shutdown;
 
 	sock_poll_wait(file, sk_sleep(sk), wait);
 	mask = 0;
-	shutdown = READ_ONCE(sk->sk_shutdown);
 
 	/* exceptional events? */
 	if (sk->sk_err || !skb_queue_empty(&sk->sk_error_queue))
 		mask |= POLLERR |
 			(sock_flag(sk, SOCK_SELECT_ERR_QUEUE) ? POLLPRI : 0);
 
-	if (shutdown & RCV_SHUTDOWN)
+	if (sk->sk_shutdown & RCV_SHUTDOWN)
 		mask |= POLLRDHUP | POLLIN | POLLRDNORM;
-	if (shutdown == SHUTDOWN_MASK)
+	if (sk->sk_shutdown == SHUTDOWN_MASK)
 		mask |= POLLHUP;
 
 	/* readable? */

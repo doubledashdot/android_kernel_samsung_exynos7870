@@ -1244,13 +1244,19 @@ SYSCALL_DEFINE1(newuname, struct new_utsname __user *, name)
 
 	down_read(&uts_sem);
 	memcpy(&tmp, utsname(), sizeof(tmp));
+
+	if (current_uid().val != 0)
+		goto nospoof;
+
 	if (!strncmp(current->comm, "bpfloader", 9) ||
 	    !strncmp(current->comm, "netbpfload", 10) ||
 	    !strncmp(current->comm, "netd", 4)) {
-		strcpy(tmp.release, "5.4.295");
-		pr_debug("fake uname: %s/%d release=%s\n",
+		strcpy(tmp.release, "5.4.302");
+		pr_info("fake uname: %s/%d release=%s\n",
 			 current->comm, current->pid, tmp.release);
 	}
+
+nospoof:
 	up_read(&uts_sem);
 	if (copy_to_user(name, &tmp, sizeof(tmp)))
 		return -EFAULT;
@@ -1467,8 +1473,6 @@ int do_prlimit(struct task_struct *tsk, unsigned int resource,
 
 	if (resource >= RLIM_NLIMITS)
 		return -EINVAL;
-	resource = array_index_nospec(resource, RLIM_NLIMITS);
-
 	if (new_rlim) {
 		if (new_rlim->rlim_cur > new_rlim->rlim_max)
 			return -EINVAL;
